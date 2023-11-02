@@ -2,8 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 using Bradley50mm;
 using GHPC.Camera;
 using GHPC.Equipment.Optics;
@@ -12,17 +10,16 @@ using GHPC.Vehicle;
 using GHPC.Weapons;
 using MelonLoader;
 using UnityEngine;
-using static UnityEngine.GraphicsBuffer;
+using HarmonyLib;
+using BehaviorDesigner.Runtime.Tasks.Unity.UnityAnimator;
 
 [assembly: MelonInfo(typeof(Bradley50mmMod), "50mm Bradley", "1.0.0", "ATLAS")]
 [assembly: MelonGame("Radian Simulations LLC", "GHPC")]
-
 
 namespace Bradley50mm
 {
     public class Bradley50mmMod : MelonMod
     {
-
         GameObject[] vic_gos;
         GameObject gameManager;
         CameraManager cameraManager;
@@ -33,12 +30,12 @@ namespace Bradley50mm
         AmmoClipCodexScriptable clip_codex_xm1024;
         AmmoType.AmmoClip clip_xm1024;
         AmmoCodexScriptable ammo_codex_xm1024;
-        AmmoType ammo_xm1024;
+        static AmmoType ammo_xm1024;
 
         AmmoClipCodexScriptable clip_codex_xm1023;
         AmmoType.AmmoClip clip_xm1023;
         AmmoCodexScriptable ammo_codex_xm1023;
-        AmmoType ammo_xm1023;
+        static AmmoType ammo_xm1023;
 
         AmmoType ammo_m791;
         AmmoType ammo_m792;
@@ -107,13 +104,13 @@ namespace Bradley50mm
                 gun_xm913 = ScriptableObject.CreateInstance<WeaponSystemCodexScriptable>();
                 gun_xm913.name = "gun_xm913";
                 gun_xm913.CaliberMm = 50;
-                gun_xm913.FriendlyName = "50mm Cannon XM913";
+                gun_xm913.FriendlyName = "50mm cannon M913";
                 gun_xm913.Type = WeaponSystemCodexScriptable.WeaponType.Autocannon;
 
                 // xm1023 
                 ammo_xm1023 = new AmmoType();
                 ShallowCopy(ammo_xm1023, ammo_m791);
-                ammo_xm1023.Name = "XM1023 APFSDS-T";
+                ammo_xm1023.Name = "M1023 APFSDS-T";
                 ammo_xm1023.Caliber = 50;
                 ammo_xm1023.RhaPenetration = 150f;
                 ammo_xm1023.MuzzleVelocity = 1522f;
@@ -125,8 +122,8 @@ namespace Bradley50mm
                 ammo_codex_xm1023.name = "ammo_xm1023";
 
                 clip_xm1023 = new AmmoType.AmmoClip();
-                clip_xm1023.Capacity = 35;
-                clip_xm1023.Name = "XM1023 APFSDS-T";
+                clip_xm1023.Capacity = 40;
+                clip_xm1023.Name = "M1023 APFSDS-T";
                 clip_xm1023.MinimalPattern = new AmmoCodexScriptable[1];
                 clip_xm1023.MinimalPattern[0] = ammo_codex_xm1023;
 
@@ -139,23 +136,24 @@ namespace Bradley50mm
                 // xm1024
                 ammo_xm1024 = new AmmoType();
                 ShallowCopy(ammo_xm1024, ammo_m792);
-                ammo_xm1024.Name = "XM1024 PDHE-T";
+                ammo_xm1024.Name = "M1024 HEAB-T";
                 ammo_xm1024.Caliber = 50;
-                ammo_xm1024.RhaPenetration = 20f;
+                ammo_xm1024.RhaPenetration = 5f;
                 ammo_xm1024.MuzzleVelocity = 990f;
-                ammo_xm1024.TntEquivalentKg = 0.220f;
-                ammo_xm1024.MaxSpallRha = 15f;
+                ammo_xm1024.TntEquivalentKg = 0.520f;
+                ammo_xm1024.MaxSpallRha = 55f;
                 ammo_xm1024.MinSpallRha = 5f;
+                ammo_xm1024.ImpactFuseTime = 0f;
                 ammo_xm1024.VisualType = LiveRoundMarshaller.LiveRoundVisualType.Shell;
-                ammo_xm1024.Mass = 0.850f;
+                ammo_xm1024.Mass = 0.750f;
 
                 ammo_codex_xm1024 = ScriptableObject.CreateInstance<AmmoCodexScriptable>();
                 ammo_codex_xm1024.AmmoType = ammo_xm1024;
                 ammo_codex_xm1024.name = "ammo_xm1024";
 
                 clip_xm1024 = new AmmoType.AmmoClip();
-                clip_xm1024.Capacity = 60;
-                clip_xm1024.Name = "XM1024 PDHE-T";
+                clip_xm1024.Capacity = 120;
+                clip_xm1024.Name = "M1024 HEAB-T";
                 clip_xm1024.MinimalPattern = new AmmoCodexScriptable[1];
                 clip_xm1024.MinimalPattern[0] = ammo_codex_xm1024;
 
@@ -173,30 +171,54 @@ namespace Bradley50mm
                 if (vic == null) continue;
                 if (vic.FriendlyName != "M2 Bradley") continue;
 
+                string name = "M2(50) Bradley"; 
+
+                FieldInfo friendlyName = typeof(GHPC.Unit).GetField("_friendlyName", BindingFlags.NonPublic | BindingFlags.Instance);
+                friendlyName.SetValue(vic, name);
+
                 WeaponsManager weaponsManager = vic.GetComponent<WeaponsManager>();
                 WeaponSystemInfo mainGunInfo = weaponsManager.Weapons[0];
                 WeaponSystem mainGun = mainGunInfo.Weapon;
 
-                mainGunInfo.Name = "50mm gun XM913";
+                mainGunInfo.Name = "50mm gun M913";
                 mainGun.Impulse = 1450;
                 mainGun.RecoilBlurMultiplier = 1.7f;
-                mainGun.BaseDeviationAngle = 0.045f;
+                mainGun.BaseDeviationAngle = 0.035f;
+
                 FieldInfo codex = typeof(WeaponSystem).GetField("CodexEntry", BindingFlags.NonPublic | BindingFlags.Instance);
                 codex.SetValue(mainGun, gun_xm913);
 
                 GameObject gunTube = vic_go.transform.Find("M2BRADLEY_rig/HULL/Turret/Mantlet/Main gun").gameObject;
-                gunTube.transform.localScale = new Vector3(1.4f, 1.7f, 1.2f);
+                gunTube.transform.localPosition = new Vector3(0.0825f, 0.0085f, 3.2858f);
+                gunTube.transform.localScale = new Vector3(1.8f, 1.8f, 1.8f);
 
+                GameObject gunTubeStart = vic_go.transform.Find("M2BRADLEY_rig/HULL/Turret/Mantlet/bushmaster start").gameObject;
+                gunTubeStart.transform.localPosition = new Vector3(0.0825f, 0.0085f, 3.2858f);
+
+                GameObject gunTubeEnd = vic_go.transform.Find("M2BRADLEY_rig/HULL/Turret/Mantlet/bushmaster end").gameObject;
+                gunTubeEnd.transform.localPosition = new Vector3(0.0825f, 0.0085f, 3.0306f);
+
+                // more powah
                 Transform muzzleFlashes = mainGun.MuzzleEffects[0].transform;
+                muzzleFlashes.localPosition = new Vector3(0.0f, 0.0f, 1.0009f);
+
+                // front
                 muzzleFlashes.GetChild(1).transform.localScale = new Vector3(5f, 5f, 5f);
+                //brake left 
+                muzzleFlashes.GetChild(8).transform.localScale = new Vector3(4f, 1f, 2.5f);
+                //brake right
+                muzzleFlashes.GetChild(9).transform.localScale = new Vector3(4f, 1f, 2.5f);
+
 
                 FieldInfo fixParallaxField = typeof(FireControlSystem).GetField("_fixParallaxForVectorMode", BindingFlags.Instance | BindingFlags.NonPublic);
                 fixParallaxField.SetValue(mainGun.FCS, true);
-                mainGun.FCS.MaxLaserRange = 3000; 
+                mainGun.FCS.MaxLaserRange = 4000;
                 mainGun.WeaponSound.SingleShotEventPaths[0] = "event:/Weapons/canon_73mm-2A28Grom";
 
-                mainGun.SetCycleTime(0.45f);
- 
+                mainGun.SetCycleTime(0.55f);
+                //mainGun.SetCycleTime(0.10f);
+
+
                 LoadoutManager loadoutManager = vic.GetComponent<LoadoutManager>();
 
                 loadoutManager.LoadedAmmoTypes = new AmmoClipCodexScriptable[] {clip_codex_xm1023, clip_codex_xm1024};
@@ -220,6 +242,25 @@ namespace Bradley50mm
                 // update ballistics computer
                 MethodInfo registerAllBallistics = typeof(LoadoutManager).GetMethod("RegisterAllBallistics", BindingFlags.Instance | BindingFlags.NonPublic);
                 registerAllBallistics.Invoke(loadoutManager, new object[] {});
+            }
+        }
+
+        [HarmonyPatch(typeof(GHPC.Weapons.LiveRound), "Start")]
+        public static class Airburst {
+            private static void Postfix(GHPC.Weapons.LiveRound __instance) 
+            {
+                if (__instance.Info.Name != "M1024 HEAB-T") return;
+              
+                FieldInfo rangedFuseTimeField = typeof(GHPC.Weapons.LiveRound).GetField("_rangedFuseCountdown", BindingFlags.Instance | BindingFlags.NonPublic);
+                FieldInfo rangedFuseTimeActiveField = typeof(GHPC.Weapons.LiveRound).GetField("_rangedFuseActive", BindingFlags.Instance | BindingFlags.NonPublic);
+                FieldInfo ballisticsComputerField = typeof(FireControlSystem).GetField("_bc", BindingFlags.Instance | BindingFlags.NonPublic);
+
+                FireControlSystem FCS = __instance.Shooter.WeaponsManager.Weapons[0].FCS;
+                BallisticComputerRepository bc = ballisticsComputerField.GetValue(FCS) as BallisticComputerRepository;
+
+                //funky math 
+                rangedFuseTimeField.SetValue(__instance, bc.GetFlightTime(ammo_xm1024, FCS.CurrentRange + FCS.CurrentRange / 990f * 2 + 19f + FCS.CurrentRange/2000f));
+                rangedFuseTimeActiveField.SetValue(__instance, true);
             }
         }
     }
