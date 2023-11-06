@@ -11,6 +11,7 @@ using GHPC.Weapons;
 using MelonLoader;
 using UnityEngine;
 using HarmonyLib;
+using System.Threading.Tasks; 
 using BehaviorDesigner.Runtime.Tasks.Unity.UnityAnimator;
 
 [assembly: MelonInfo(typeof(Bradley50mmMod), "50mm Bradley", "1.0.0", "ATLAS")]
@@ -79,15 +80,17 @@ namespace Bradley50mm
             }
         }
 
-        public override void OnInitializeMelon()
+        public override async void OnSceneWasInitialized(int buildIndex, string sceneName)
         {
-        }
-
-        public override void OnSceneWasInitialized(int buildIndex, string sceneName)
-        {
-            if (sceneName == "MainMenu2_Scene" || sceneName == "LOADER_MENU" || sceneName == "LOADER_INITIAL") return;
+            if (sceneName == "MainMenu2_Scene" || sceneName == "LOADER_MENU" || sceneName == "LOADER_INITIAL" || sceneName == "t64a_menu") return;
 
             vic_gos = GameObject.FindGameObjectsWithTag("Vehicle");
+
+            while (vic_gos.Length == 0) {
+                vic_gos = GameObject.FindGameObjectsWithTag("Vehicle"); 
+                await Task.Delay(3000); 
+            } 
+            
             gameManager = GameObject.Find("_APP_GHPC_");
             cameraManager = gameManager.GetComponent<CameraManager>();
             playerManager = gameManager.GetComponent<PlayerInput>();
