@@ -18,6 +18,7 @@ using GHPC;
 using GHPC.Utility;
 using static MelonLoader.MelonLogger;
 using System.Collections;
+using GHPC.State;
 
 [assembly: MelonInfo(typeof(Bradley50mmMod), "50mm Bradley", "2.0.1", "ATLAS")]
 [assembly: MelonGame("Radian Simulations LLC", "GHPC")]
@@ -130,16 +131,20 @@ namespace Bradley50mm
             if (sceneName == "MainMenu2_Scene" || sceneName == "LOADER_MENU" || sceneName == "LOADER_INITIAL" || sceneName == "t64_menu") return;
 
             vic_gos = GameObject.FindGameObjectsWithTag("Vehicle");
+            //GameObject d = GameObject.Find("SceneController");
 
-            while (vic_gos.Length == 0)
+            //MelonLogger.Msg(d.activeSelf);
+
+            while (vic_gos.Length == 0) 
             {
                 vic_gos = GameObject.FindGameObjectsWithTag("Vehicle");
-                await Task.Delay(1);
+                await Task.Delay(3000);
             }
-
-            await Task.Delay(3000);
+            vic_gos = GameObject.FindGameObjectsWithTag("Vehicle");
+            //await Task.Delay(3000);
 
             gameManager = GameObject.Find("_APP_GHPC_");
+
             cameraManager = gameManager.GetComponent<CameraManager>();
             playerManager = gameManager.GetComponent<PlayerInput>();
 
@@ -280,7 +285,6 @@ namespace Bradley50mm
                 mainGun.BaseDeviationAngle = 0.030f;
                 mainGun.FCS.MaxLaserRange = 4000;
                 mainGun.WeaponSound.SingleShotEventPaths[0] = "event:/Weapons/canon_73mm-2A28Grom";
-
 
                 FieldInfo codex = typeof(WeaponSystem).GetField("CodexEntry", BindingFlags.NonPublic | BindingFlags.Instance);
                 codex.SetValue(mainGun, gun_xm913);
@@ -475,6 +479,19 @@ namespace Bradley50mm
                 if (vic.FriendlyName != "M2(50) Bradley") return;
 
                 ResetGuidance(__instance, vic.GetComponentInChildren<FireControlSystem>());
+            }
+        }
+
+        [HarmonyPatch(typeof(GHPC.Weapons.MissileGuidanceUnit), "StopGuidance")]
+        public static class KeepTracking
+        {
+            private static bool Prefix(GHPC.Weapons.MissileGuidanceUnit __instance)
+            {
+                if (__instance.CurrentMissiles.Count > 0 && __instance.CurrentMissiles[0].ShotInfo.TypeInfo.Name == "BGM-71C I-TOW-FF") {
+                    return false; 
+                }
+
+                return true; 
             }
         }
 
