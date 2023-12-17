@@ -1,4 +1,7 @@
 # <sub><sup>a</sup></sub> SUPER UP-GUNNED BRADLEY <sub><sup>to</sup></sub> DEAL <sub><sup>with</sup></sub> THOSE EAST GERMANS <sub><sup>on</sup></sub> YOUR DOORSTEP
+
+Demo video: https://www.youtube.com/watch?v=XUGd5MkNyO8
+
 # Loadout
 - M913, 50mm Autocannon
   - M1023 APFSDS-T, 40 rnds
