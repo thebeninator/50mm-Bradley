@@ -20,7 +20,7 @@ using static MelonLoader.MelonLogger;
 using System.Collections;
 using GHPC.State;
 
-[assembly: MelonInfo(typeof(Bradley50mmMod), "50mm Bradley", "2.0.1", "ATLAS")]
+[assembly: MelonInfo(typeof(Bradley50mmMod), "50mm Bradley", "2.0.2", "ATLAS")]
 [assembly: MelonGame("Radian Simulations LLC", "GHPC")]
 
 namespace Bradley50mm
