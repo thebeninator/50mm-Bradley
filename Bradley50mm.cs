@@ -19,7 +19,7 @@ using GHPC.Utility;
 using static MelonLoader.MelonLogger;
 using System.Collections;
 
-[assembly: MelonInfo(typeof(Bradley50mmMod), "50mm Bradley", "2.0.0", "ATLAS")]
+[assembly: MelonInfo(typeof(Bradley50mmMod), "50mm Bradley", "2.0.1", "ATLAS")]
 [assembly: MelonGame("Radian Simulations LLC", "GHPC")]
 
 namespace Bradley50mm
@@ -399,11 +399,11 @@ namespace Bradley50mm
                 BallisticComputerRepository bc = ballisticsComputerField.GetValue(FCS) as BallisticComputerRepository;
                 float range = FCS.CurrentRange;
                 float fallOff = bc.GetFallOfShot(ammo_xm1024, range);
-                float extra_distance = range > 2000 ? 19f + 3.5f : 19f; 
+                float extra_distance = range > 2000 ? 19f + 3.5f : 17f;
 
                 //funky math 
-                rangedFuseTimeActiveField.SetValue(__instance, true);
                 rangedFuseTimeField.SetValue(__instance, bc.GetFlightTime(ammo_xm1024, range + range / ammo_xm1024.MuzzleVelocity * 2 + (range + fallOff) / 2000f + extra_distance));
+                rangedFuseTimeActiveField.SetValue(__instance, true);
             }
         }
 
@@ -413,13 +413,14 @@ namespace Bradley50mm
             private static void Postfix(GHPC.Weapons.FireControlSystem __instance)
             {
                 if (__instance.gameObject.GetComponentInParent<Vehicle>().FriendlyName != "M2(50) Bradley") return;
+                if (__instance.CurrentAmmoType.Name != "BGM-71C I-TOW-FF") return; 
 
                 float num = -1f;
                 int layerMask = 1 << CodeUtils.LAYER_MASK_VISIBILITYONLY;
                 RaycastHit raycastHit;
                 if (Physics.Raycast(__instance.LaserOrigin.position, __instance.LaserOrigin.forward, out raycastHit, __instance.MaxLaserRange, layerMask) && raycastHit.collider.tag == "Smoke")
                 {
-                    num = raycastHit.distance;
+                    return;
                 }
                 if (Physics.Raycast(__instance.LaserOrigin.position, __instance.LaserOrigin.forward, out raycastHit, __instance.MaxLaserRange, ConstantsAndInfoManager.Instance.LaserRangefinderLayerMask.value) && (raycastHit.distance < num || num == -1f))
                 {
