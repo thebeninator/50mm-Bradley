@@ -323,6 +323,7 @@ namespace Bradley50mm
 
                 lock_text.transform.localPosition = new Vector3(91.1828f, 0f, 0f);
                 lock_text.transform.localScale = new Vector3(1f, 1f, 1f);
+                lock_text.transform.localEulerAngles = new Vector3(0f, 0f, 0f);
                 lock_text.GetComponent<TMPro.TextMeshProUGUI>().text = "NO LOCK";
                 lock_text.SetActive(true);
 
@@ -333,6 +334,7 @@ namespace Bradley50mm
 
                 lock_text_flir.transform.localPosition = new Vector3(91.1828f, 0f, 0f);
                 lock_text_flir.transform.localScale = new Vector3(1f, 1f, 1f);
+                lock_text_flir.transform.localEulerAngles = new Vector3(0f, 0f, 0f);
                 lock_text_flir.GetComponent<TMPro.TextMeshProUGUI>().text = "NO LOCK";
                 lock_text_flir.SetActive(true);
 
