@@ -17,10 +17,8 @@ using BehaviorDesigner.Runtime.Tasks.Unity.UnityAnimator;
 using GHPC;
 using GHPC.Utility;
 using static MelonLoader.MelonLogger;
-using System.Collections;
-using GHPC.State;
 
-[assembly: MelonInfo(typeof(Bradley50mmMod), "50mm Bradley", "2.0.2", "ATLAS")]
+[assembly: MelonInfo(typeof(Bradley50mmMod), "50mm Bradley", "2.0.3", "ATLAS")]
 [assembly: MelonGame("Radian Simulations LLC", "GHPC")]
 
 namespace Bradley50mm
@@ -131,17 +129,14 @@ namespace Bradley50mm
             if (sceneName == "MainMenu2_Scene" || sceneName == "LOADER_MENU" || sceneName == "LOADER_INITIAL" || sceneName == "t64_menu") return;
 
             vic_gos = GameObject.FindGameObjectsWithTag("Vehicle");
-            //GameObject d = GameObject.Find("SceneController");
-
-            //MelonLogger.Msg(d.activeSelf);
 
             while (vic_gos.Length == 0) 
             {
                 vic_gos = GameObject.FindGameObjectsWithTag("Vehicle");
-                await Task.Delay(3000);
+                await Task.Delay(1);
             }
-            vic_gos = GameObject.FindGameObjectsWithTag("Vehicle");
-            //await Task.Delay(3000);
+
+            await Task.Delay(3000);
 
             gameManager = GameObject.Find("_APP_GHPC_");
 
@@ -228,7 +223,7 @@ namespace Bradley50mm
                 ammo_TOW_FF = new AmmoType();
                 Util.ShallowCopy(ammo_TOW_FF, ammo_I_TOW);
                 ammo_TOW_FF.Name = "BGM-71C I-TOW-FF";
-                ammo_TOW_FF.TntEquivalentKg = 4.5f;
+                ammo_TOW_FF.TntEquivalentKg = 1.5f;
                 ammo_TOW_FF.SpallMultiplier = 1.5f;
                 ammo_TOW_FF.Tandem = true;
                 ammo_TOW_FF.ClimbAngle = 20f;
@@ -313,7 +308,7 @@ namespace Bradley50mm
                 FieldInfo fixParallaxField = typeof(FireControlSystem).GetField("_fixParallaxForVectorMode", BindingFlags.Instance | BindingFlags.NonPublic);
                 fixParallaxField.SetValue(mainGun.FCS, true);
 
-                UsableOptic optic = mainGun.FCS.MainOptic;
+                UsableOptic optic = Util.GetDayOptic(mainGun.FCS);
                 UsableOptic night_optic = optic.slot.LinkedNightSight.PairedOptic;
                 optic.RotateAzimuth = true;
                 optic.slot.LinkedNightSight.PairedOptic.RotateAzimuth = true;

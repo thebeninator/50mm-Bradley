@@ -5,6 +5,7 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using GHPC.Weapons;
+using GHPC.Equipment.Optics;
 using UnityEngine;
 
 namespace Bradley50mm
@@ -29,6 +30,17 @@ namespace Bradley50mm
                 }
             }
         }
+
+        public static UsableOptic GetDayOptic(FireControlSystem fcs) {
+            if (fcs.MainOptic.slot.IsLinkedNightSight)
+            {
+                return fcs.MainOptic.slot.LinkedDaySight.PairedOptic;
+            }
+            else {
+                return fcs.MainOptic; 
+            }
+
+        } 
 
         public static void EmptyRack(GHPC.Weapons.AmmoRack rack)
         {
