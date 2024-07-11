@@ -17,9 +17,8 @@ using BehaviorDesigner.Runtime.Tasks.Unity.UnityAnimator;
 using GHPC;
 using GHPC.Utility;
 using static MelonLoader.MelonLogger;
-
-[assembly: MelonInfo(typeof(Bradley50mmMod), "50mm Bradley", "2.0.3", "ATLAS")]
-[assembly: MelonGame("Radian Simulations LLC", "GHPC")]
+using GHPC.State;
+using System.Collections;
 
 namespace Bradley50mm
 {
@@ -35,40 +34,34 @@ namespace Bradley50mm
         public MissileGuidanceUnit Unit { get; set; }
     }
 
-    public class Bradley50mmMod : MelonMod
+    public class Bradley50mm 
     {
-        GameObject[] vic_gos;
-        GameObject gameManager;
-        CameraManager cameraManager;
-        static PlayerInput playerManager;
+        static WeaponSystemCodexScriptable gun_xm913;
 
-        WeaponSystemCodexScriptable gun_xm913;
-
-        AmmoClipCodexScriptable clip_codex_xm1024;
-        AmmoType.AmmoClip clip_xm1024;
-        AmmoCodexScriptable ammo_codex_xm1024;
+        static AmmoClipCodexScriptable clip_codex_xm1024;
+        static AmmoType.AmmoClip clip_xm1024;
+        static AmmoCodexScriptable ammo_codex_xm1024;
         static AmmoType ammo_xm1024;
 
-        AmmoClipCodexScriptable clip_codex_xm1023;
-        AmmoType.AmmoClip clip_xm1023;
-        AmmoCodexScriptable ammo_codex_xm1023;
+        static AmmoClipCodexScriptable clip_codex_xm1023;
+        static AmmoType.AmmoClip clip_xm1023;
+        static AmmoCodexScriptable ammo_codex_xm1023;
         static AmmoType ammo_xm1023;
 
-        AmmoClipCodexScriptable clip_codex_TOW_FF;
-        AmmoType.AmmoClip clip_TOW_FF;
-        AmmoCodexScriptable ammo_codex_TOW_FF;
+        static AmmoClipCodexScriptable clip_codex_TOW_FF;
+        static AmmoType.AmmoClip clip_TOW_FF;
+        static AmmoCodexScriptable ammo_codex_TOW_FF;
         static AmmoType ammo_TOW_FF;
 
-        AmmoType ammo_m791;
-        AmmoType ammo_m792;
-        AmmoType ammo_I_TOW;
+        static AmmoType ammo_m791;
+        static AmmoType ammo_m792;
+        static AmmoType ammo_I_TOW;
 
         static Dictionary<int, LockOnData> locked_on_targets = new Dictionary<int, LockOnData>();
 
         public static void UpdateLockText(FireControlSystem fcs, string text) {
             GameObject lock_text_optic;
             GameObject lock_text_optic_night;
-
 
             if (fcs.MainOptic.slot.IsLinkedNightSight)
             {
@@ -109,7 +102,7 @@ namespace Bradley50mm
 
         // if you're wondering, yes: this is literally just teleporting the guidance computer over the target 
         // and telling it to look down
-        public override void OnLateUpdate() {
+        public static void LateUpdate() {
             foreach (KeyValuePair<int, LockOnData> t in locked_on_targets)
             {
                 Vehicle vic = t.Value.Target;
@@ -124,148 +117,16 @@ namespace Bradley50mm
             }
         }
 
-        public override async void OnSceneWasInitialized(int buildIndex, string sceneName)
+        public static IEnumerator Convert(GameState _)
         {
-            if (sceneName == "MainMenu2_Scene" || sceneName == "LOADER_MENU" || sceneName == "LOADER_INITIAL" || sceneName == "t64_menu") return;
-
-            vic_gos = GameObject.FindGameObjectsWithTag("Vehicle");
-
-            while (vic_gos.Length == 0) 
+            foreach (Vehicle vic in Bradley50mmMod.vics)
             {
-                vic_gos = GameObject.FindGameObjectsWithTag("Vehicle");
-                await Task.Delay(1);
-            }
-
-            await Task.Delay(3000);
-
-            gameManager = GameObject.Find("_APP_GHPC_");
-
-            cameraManager = gameManager.GetComponent<CameraManager>();
-            playerManager = gameManager.GetComponent<PlayerInput>();
-
-            if (gun_xm913 == null)
-            {
-                foreach (AmmoCodexScriptable s in Resources.FindObjectsOfTypeAll(typeof(AmmoCodexScriptable)))
-                {
-                    if (s.AmmoType.Name == "25mm APDS-T M791") ammo_m791 = s.AmmoType;
-                    if (s.AmmoType.Name == "25mm HEI-T M792") ammo_m792 = s.AmmoType;
-                    if (s.AmmoType.Name == "BGM-71C I-TOW") ammo_I_TOW = s.AmmoType;
-                }
-
-                // xm913
-                gun_xm913 = ScriptableObject.CreateInstance<WeaponSystemCodexScriptable>();
-                gun_xm913.name = "gun_xm913";
-                gun_xm913.CaliberMm = 50;
-                gun_xm913.FriendlyName = "50mm cannon M913";
-                gun_xm913.Type = WeaponSystemCodexScriptable.WeaponType.Autocannon;
-
-                // xm1023 
-                ammo_xm1023 = new AmmoType();
-                Util.ShallowCopy(ammo_xm1023, ammo_m791);
-                ammo_xm1023.Name = "M1023 APFSDS-T";
-                ammo_xm1023.Caliber = 50;
-                ammo_xm1023.RhaPenetration = 150f;
-                ammo_xm1023.MuzzleVelocity = 1522f;
-                ammo_xm1023.VisualType = LiveRoundMarshaller.LiveRoundVisualType.Shell;
-                ammo_xm1023.Mass = 0.550f;
-
-                ammo_codex_xm1023 = ScriptableObject.CreateInstance<AmmoCodexScriptable>();
-                ammo_codex_xm1023.AmmoType = ammo_xm1023;
-                ammo_codex_xm1023.name = "ammo_xm1023";
-
-                clip_xm1023 = new AmmoType.AmmoClip();
-                clip_xm1023.Capacity = 40;
-                clip_xm1023.Name = "M1023 APFSDS-T";
-                clip_xm1023.MinimalPattern = new AmmoCodexScriptable[1];
-                clip_xm1023.MinimalPattern[0] = ammo_codex_xm1023;
-
-                clip_codex_xm1023 = ScriptableObject.CreateInstance<AmmoClipCodexScriptable>();
-                clip_codex_xm1023.name = "clip_xm1023";
-                clip_codex_xm1023.CompatibleWeaponSystems = new WeaponSystemCodexScriptable[1];
-                clip_codex_xm1023.CompatibleWeaponSystems[0] = gun_xm913;
-                clip_codex_xm1023.ClipType = clip_xm1023;
-
-                // xm1024
-                ammo_xm1024 = new AmmoType();
-                Util.ShallowCopy(ammo_xm1024, ammo_m792);
-                ammo_xm1024.Name = "M1024 HEAB-T";
-                ammo_xm1024.Caliber = 50;
-                ammo_xm1024.RhaPenetration = 5f;
-                ammo_xm1024.MuzzleVelocity = 990f;
-                ammo_xm1024.TntEquivalentKg = 0.520f;
-                ammo_xm1024.MaxSpallRha = 30f;
-                ammo_xm1024.MinSpallRha = 10f;
-                ammo_xm1024.ImpactFuseTime = 0.005f;
-                ammo_xm1024.ImpactTypeFuzed = ParticleEffectsManager.EffectVisualType.AutocannonImpactExplosive;
-                ammo_xm1024.ImpactTypeFuzedTerrain = ParticleEffectsManager.EffectVisualType.AutocannonImpactExplosiveTerrain;
-                ammo_xm1024.ImpactTypeUnfuzed = ParticleEffectsManager.EffectVisualType.AutocannonImpactExplosive;
-                ammo_xm1024.ImpactTypeUnfuzedTerrain = ParticleEffectsManager.EffectVisualType.AutocannonImpactExplosiveTerrain;
-                ammo_xm1024.VisualType = LiveRoundMarshaller.LiveRoundVisualType.Shell;
-                ammo_xm1024.Mass = 0.750f;
-
-                ammo_codex_xm1024 = ScriptableObject.CreateInstance<AmmoCodexScriptable>();
-                ammo_codex_xm1024.AmmoType = ammo_xm1024;
-                ammo_codex_xm1024.name = "ammo_xm1024";
-
-                clip_xm1024 = new AmmoType.AmmoClip();
-                clip_xm1024.Capacity = 120;
-                clip_xm1024.Name = "M1024 HEAB-T";
-                clip_xm1024.MinimalPattern = new AmmoCodexScriptable[1];
-                clip_xm1024.MinimalPattern[0] = ammo_codex_xm1024;
-
-                clip_codex_xm1024 = ScriptableObject.CreateInstance<AmmoClipCodexScriptable>();
-                clip_codex_xm1024.name = "clip_xm1024";
-                clip_codex_xm1024.CompatibleWeaponSystems = new WeaponSystemCodexScriptable[1];
-                clip_codex_xm1024.CompatibleWeaponSystems[0] = gun_xm913;
-                clip_codex_xm1024.ClipType = clip_xm1024;
-
-                // TOW-FF
-                ammo_TOW_FF = new AmmoType();
-                Util.ShallowCopy(ammo_TOW_FF, ammo_I_TOW);
-                ammo_TOW_FF.Name = "BGM-71C I-TOW-FF";
-                ammo_TOW_FF.TntEquivalentKg = 1.5f;
-                ammo_TOW_FF.SpallMultiplier = 1.5f;
-                ammo_TOW_FF.Tandem = true;
-                ammo_TOW_FF.ClimbAngle = 20f;
-                ammo_TOW_FF.TurnSpeed = 2.5f;
-                ammo_TOW_FF.DiveAngle = 45F;
-                ammo_TOW_FF.LoiterAltitude = 5000f;
-                ammo_TOW_FF.AimPointMarch = 0.05f;
-                ammo_TOW_FF.MaxSpallRha = 55f;
-                ammo_TOW_FF.MinSpallRha = 20f;
-                //ammo_TOW_FF.MuzzleVelocity = 140f;
-                //ammo_TOW_FF.SphericalSpall = true;
-                ammo_TOW_FF.RangedFuseTime = 20f;
-                ammo_TOW_FF.UseTracer = false;
-                ammo_TOW_FF.EdgeSetback = 0.5f;
-                ammo_TOW_FF.Guidance = AmmoType.GuidanceType.Laser;
-
-                ammo_codex_TOW_FF = ScriptableObject.CreateInstance<AmmoCodexScriptable>();
-                ammo_codex_TOW_FF.AmmoType = ammo_TOW_FF;
-                ammo_codex_TOW_FF.name = "ammo_TOW_FF";
-
-                clip_TOW_FF = new AmmoType.AmmoClip();
-                clip_TOW_FF.Capacity = 2;
-                clip_TOW_FF.Name = "BGM-71C I-TOW-FF";
-                clip_TOW_FF.MinimalPattern = new AmmoCodexScriptable[1];
-                clip_TOW_FF.MinimalPattern[0] = ammo_codex_TOW_FF;
-
-                clip_codex_TOW_FF = ScriptableObject.CreateInstance<AmmoClipCodexScriptable>();
-                clip_codex_TOW_FF.name = "clip_TOW_FF";
-                clip_codex_TOW_FF.ClipType = clip_TOW_FF;
-            }
-
-            foreach (GameObject vic_go in vic_gos)
-            {
-                Vehicle vic = vic_go.GetComponent<Vehicle>();
+                GameObject vic_go = vic.gameObject;
 
                 if (vic == null) continue;
                 if (vic.FriendlyName != "M2 Bradley") continue;
 
-                string name = "M2(50) Bradley"; 
-
-                FieldInfo friendlyName = typeof(GHPC.Unit).GetField("_friendlyName", BindingFlags.NonPublic | BindingFlags.Instance);
-                friendlyName.SetValue(vic, name);
+                vic._friendlyName = "M2(50) Bradley"; 
 
                 WeaponsManager weaponsManager = vic.GetComponent<WeaponsManager>();
                 WeaponSystemInfo mainGunInfo = weaponsManager.Weapons[0];
@@ -308,8 +169,8 @@ namespace Bradley50mm
                 FieldInfo fixParallaxField = typeof(FireControlSystem).GetField("_fixParallaxForVectorMode", BindingFlags.Instance | BindingFlags.NonPublic);
                 fixParallaxField.SetValue(mainGun.FCS, true);
 
-                UsableOptic optic = Util.GetDayOptic(mainGun.FCS);
-                UsableOptic night_optic = optic.slot.LinkedNightSight.PairedOptic;
+                UsableOptic optic = vic.transform.Find("M2BRADLEY_rig/HULL/Turret/GPS Optic").GetComponent<UsableOptic>();
+                UsableOptic night_optic = vic.transform.Find("M2BRADLEY_rig/HULL/Turret/FLIR").GetComponent<UsableOptic>();
                 optic.RotateAzimuth = true;
                 optic.slot.LinkedNightSight.PairedOptic.RotateAzimuth = true;
                 optic.transform.GetChild(2).transform.localPosition = new Vector3(2.8227f, 2.7418f, 0f);
@@ -344,7 +205,7 @@ namespace Bradley50mm
                 towGun.MaxSpeedToDeploy = 999f;
                 vic.AimablePlatforms[2].ForcedStowSpeed = 999f;
 
-                mainGun.SetCycleTime(0.35f);
+                mainGun.SetCycleTime(0.37f);
                 //mainGun.SetCycleTime(0.10f);
 
                 LoadoutManager loadoutManager = vic.GetComponent<LoadoutManager>();
@@ -369,26 +230,135 @@ namespace Bradley50mm
 
                 loadoutManager.SpawnCurrentLoadout();
 
-                PropertyInfo roundInBreech = typeof(AmmoFeed).GetProperty("AmmoTypeInBreech"); 
-                roundInBreech.SetValue(mainGun.Feed, null);
-                roundInBreech.SetValue(towGun.Feed, null);
-
-                MethodInfo refreshBreech = typeof(AmmoFeed).GetMethod("Start", BindingFlags.Instance | BindingFlags.NonPublic);
-                refreshBreech.Invoke(mainGun.Feed, new object[] {});
-                refreshBreech.Invoke(towGun.Feed, new object[] { });
+                mainGun.Feed.AmmoTypeInBreech = null;
+                towGun.Feed.AmmoTypeInBreech = null;
+                mainGun.Feed.Start();
+                towGun.Feed.Start();
 
                 towRack.AddInvisibleClip(clip_TOW_FF);
 
                 // update ballistics computer
-                MethodInfo registerAllBallistics = typeof(LoadoutManager).GetMethod("RegisterAllBallistics", BindingFlags.Instance | BindingFlags.NonPublic);
-                registerAllBallistics.Invoke(loadoutManager, new object[] {});
+                loadoutManager.RegisterAllBallistics();
             }
+
+            yield break;
+        }
+
+        public static void Init() {
+            if (gun_xm913 == null)
+            {
+                foreach (AmmoCodexScriptable s in Resources.FindObjectsOfTypeAll(typeof(AmmoCodexScriptable)))
+                {
+                    if (s.AmmoType.Name == "25mm APDS-T M791") ammo_m791 = s.AmmoType;
+                    if (s.AmmoType.Name == "25mm HEI-T M792") ammo_m792 = s.AmmoType;
+                    if (s.AmmoType.Name == "BGM-71C I-TOW") ammo_I_TOW = s.AmmoType;
+                }
+
+                // xm913
+                gun_xm913 = ScriptableObject.CreateInstance<WeaponSystemCodexScriptable>();
+                gun_xm913.name = "gun_xm913";
+                gun_xm913.CaliberMm = 50;
+                gun_xm913.FriendlyName = "50mm cannon M913";
+                gun_xm913.Type = WeaponSystemCodexScriptable.WeaponType.Autocannon;
+
+                // xm1023 
+                ammo_xm1023 = new AmmoType();
+                Util.ShallowCopy(ammo_xm1023, ammo_m791);
+                ammo_xm1023.Name = "M1023 APFSDS-T";
+                ammo_xm1023.Caliber = 50;
+                ammo_xm1023.RhaPenetration = 120f;
+                ammo_xm1023.MuzzleVelocity = 1522f;
+                ammo_xm1023.VisualType = LiveRoundMarshaller.LiveRoundVisualType.Shell;
+                ammo_xm1023.Mass = 0.550f;
+
+                ammo_codex_xm1023 = ScriptableObject.CreateInstance<AmmoCodexScriptable>();
+                ammo_codex_xm1023.AmmoType = ammo_xm1023;
+                ammo_codex_xm1023.name = "ammo_xm1023";
+
+                clip_xm1023 = new AmmoType.AmmoClip();
+                clip_xm1023.Capacity = 40;
+                clip_xm1023.Name = "M1023 APFSDS-T";
+                clip_xm1023.MinimalPattern = new AmmoCodexScriptable[1];
+                clip_xm1023.MinimalPattern[0] = ammo_codex_xm1023;
+
+                clip_codex_xm1023 = ScriptableObject.CreateInstance<AmmoClipCodexScriptable>();
+                clip_codex_xm1023.name = "clip_xm1023";
+                clip_codex_xm1023.CompatibleWeaponSystems = new WeaponSystemCodexScriptable[1];
+                clip_codex_xm1023.CompatibleWeaponSystems[0] = gun_xm913;
+                clip_codex_xm1023.ClipType = clip_xm1023;
+
+                // xm1024
+                ammo_xm1024 = new AmmoType();
+                Util.ShallowCopy(ammo_xm1024, ammo_m792);
+                ammo_xm1024.Name = "M1024 HEAB-T";
+                ammo_xm1024.Caliber = 50;
+                ammo_xm1024.RhaPenetration = 5f;
+                ammo_xm1024.MuzzleVelocity = 990f;
+                ammo_xm1024.TntEquivalentKg = 0.250f;
+                ammo_xm1024.MaxSpallRha = 45f;
+                ammo_xm1024.MinSpallRha = 25f;
+                ammo_xm1024.ImpactFuseTime = 0.005f;
+                ammo_xm1024.VisualType = LiveRoundMarshaller.LiveRoundVisualType.Shell;
+                ammo_xm1024.Mass = 0.750f;
+
+                ammo_codex_xm1024 = ScriptableObject.CreateInstance<AmmoCodexScriptable>();
+                ammo_codex_xm1024.AmmoType = ammo_xm1024;
+                ammo_codex_xm1024.name = "ammo_xm1024";
+
+                clip_xm1024 = new AmmoType.AmmoClip();
+                clip_xm1024.Capacity = 120;
+                clip_xm1024.Name = "M1024 HEAB-T";
+                clip_xm1024.MinimalPattern = new AmmoCodexScriptable[1];
+                clip_xm1024.MinimalPattern[0] = ammo_codex_xm1024;
+
+                clip_codex_xm1024 = ScriptableObject.CreateInstance<AmmoClipCodexScriptable>();
+                clip_codex_xm1024.name = "clip_xm1024";
+                clip_codex_xm1024.CompatibleWeaponSystems = new WeaponSystemCodexScriptable[1];
+                clip_codex_xm1024.CompatibleWeaponSystems[0] = gun_xm913;
+                clip_codex_xm1024.ClipType = clip_xm1024;
+
+                // TOW-FF
+                ammo_TOW_FF = new AmmoType();
+                Util.ShallowCopy(ammo_TOW_FF, ammo_I_TOW);
+                ammo_TOW_FF.Name = "BGM-71C I-TOW-FF";
+                ammo_TOW_FF.TntEquivalentKg = 2f;
+                ammo_TOW_FF.SpallMultiplier = 1.5f;
+                ammo_TOW_FF.Tandem = true;
+                ammo_TOW_FF.ClimbAngle = 20f;
+                ammo_TOW_FF.TurnSpeed = 2.5f;
+                ammo_TOW_FF.DiveAngle = 45F;
+                ammo_TOW_FF.LoiterAltitude = 2500f;
+                ammo_TOW_FF.AimPointMarch = 0.05f;
+                ammo_TOW_FF.MaxSpallRha = 55f;
+                ammo_TOW_FF.MinSpallRha = 20f;
+                ammo_TOW_FF.RangedFuseTime = 20f;
+                ammo_TOW_FF.UseTracer = false;
+                ammo_TOW_FF.EdgeSetback = 0.5f;
+                ammo_TOW_FF.Guidance = AmmoType.GuidanceType.Laser;
+                ammo_TOW_FF.Flight = AmmoType.FlightPattern.TopAttack;
+
+                ammo_codex_TOW_FF = ScriptableObject.CreateInstance<AmmoCodexScriptable>();
+                ammo_codex_TOW_FF.AmmoType = ammo_TOW_FF;
+                ammo_codex_TOW_FF.name = "ammo_TOW_FF";
+
+                clip_TOW_FF = new AmmoType.AmmoClip();
+                clip_TOW_FF.Capacity = 2;
+                clip_TOW_FF.Name = "BGM-71C I-TOW-FF";
+                clip_TOW_FF.MinimalPattern = new AmmoCodexScriptable[1];
+                clip_TOW_FF.MinimalPattern[0] = ammo_codex_TOW_FF;
+
+                clip_codex_TOW_FF = ScriptableObject.CreateInstance<AmmoClipCodexScriptable>();
+                clip_codex_TOW_FF.name = "clip_TOW_FF";
+                clip_codex_TOW_FF.ClipType = clip_TOW_FF;
+            }
+
+            StateController.RunOrDefer(GameState.GameReady, new GameStateEventHandler(Convert), GameStatePriority.Medium);
         }
 
         [HarmonyPatch(typeof(GHPC.Weapons.LiveRound), "Start")]
-        public static class Airburst 
+        public static class Airburst
         {
-            private static void Postfix(GHPC.Weapons.LiveRound __instance) 
+            private static void Postfix(GHPC.Weapons.LiveRound __instance)
             {
                 if (__instance.Info.Name != "M1024 HEAB-T") return;
 
@@ -449,11 +419,11 @@ namespace Bradley50mm
         {
             private static void Postfix(GHPC.AI.UnitAI __instance, object[] __args)
             {
-                bool player_controlled = playerManager.CurrentPlayerUnit.InstanceId == __instance.Unit.InstanceId;
+                bool player_controlled = Bradley50mmMod.player_manager.CurrentPlayerUnit.InstanceId == __instance.Unit.InstanceId;
 
                 if (player_controlled) return;
                 if (__args[0] == null) return;
-                if ((__args[0] as GHPC.AI.ITarget).Owner == null) return;
+                if ((__args[0] as GHPC.AI.Interfaces.ITarget).Owner == null) return;
                 if (__instance.Unit.FriendlyName != "M2(50) Bradley") return;
 
                 WeaponSystemInfo weapon_system_info = __instance.UCI.GunnerBrain.ActiveWeapon;
@@ -462,7 +432,7 @@ namespace Bradley50mm
 
                 if (weapon_system_info.FCS.CurrentAmmoType.Name != "BGM-71C I-TOW-FF") return;
 
-                SetTarget(weapon_system_info.FCS, (__args[0] as GHPC.AI.ITarget).Owner as GHPC.Vehicle.Vehicle);
+                SetTarget(weapon_system_info.FCS, (__args[0] as GHPC.AI.Interfaces.ITarget).Owner as GHPC.Vehicle.Vehicle);
             }
         }
 

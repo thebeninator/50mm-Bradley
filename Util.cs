@@ -11,7 +11,17 @@ using UnityEngine;
 namespace Bradley50mm
 {
     public class Util
-    {
+    { 
+        public class AlreadyConverted : MonoBehaviour { }
+
+        public static string[] menu_screens = new string[] {
+            "MainMenu2_Scene",
+            "MainMenu2-1_Scene",
+            "LOADER_MENU",
+            "LOADER_INITIAL",
+            "t64_menu"
+        };
+
         // https://snipplr.com/view/75285/clone-from-one-object-to-another-using-reflection
         public static void ShallowCopy(System.Object dest, System.Object src)
         {

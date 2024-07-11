@@ -21,6 +21,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -33,13 +34,14 @@
   <ItemGroup>
     <Reference Include="0Harmony, Version=2.10.1.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Gunner HEAT PC\Bin\MelonLoader\net35\0Harmony.dll</HintPath>
+      <HintPath>..\..\..\Desktop\GHPC MODDED\MelonLoader\net35\0Harmony.dll</HintPath>
     </Reference>
-    <Reference Include="Assembly-CSharp">
-      <HintPath>..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Gunner HEAT PC\Bin\GHPC_Data\Managed\Assembly-CSharp.dll</HintPath>
+    <Reference Include="Assembly-CSharp-Publicized">
+      <HintPath>..\..\..\Desktop\GHPC MODDED\GHPC_Data\Managed\publicized_assemblies\Assembly-CSharp-Publicized.dll</HintPath>
     </Reference>
-    <Reference Include="MelonLoader">
-      <HintPath>..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Gunner HEAT PC\Bin\MelonLoader\net35\MelonLoader.dll</HintPath>
+    <Reference Include="MelonLoader, Version=0.6.1.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\Desktop\GHPC MODDED\MelonLoader\net35\MelonLoader.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -73,6 +75,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Bradley50mm.cs" />
+    <Compile Include="Main.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Util.cs" />
   </ItemGroup>
